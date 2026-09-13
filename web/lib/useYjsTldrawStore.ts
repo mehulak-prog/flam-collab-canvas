@@ -18,6 +18,7 @@ import {
   defaultShapeUtils,
   type TLRecord,
   type TLStoreWithStatus,
+  type TLAssetStore,
 } from "tldraw";
 import * as Y from "yjs";
 import type { HocuspocusProvider } from "@hocuspocus/provider";
@@ -30,11 +31,40 @@ export interface YjsTldrawStore {
   provider: HocuspocusProvider | null;
 }
 
+function createAssetStore(roomId: string): TLAssetStore {
+  return {
+    async upload(_asset, file, abortSignal) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`/api/rooms/${roomId}/assets`, {
+        method: "POST",
+        body: formData,
+        signal: abortSignal,
+      });
+
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(body?.message ?? "Upload failed");
+      }
+
+      return { src: body.originalUrl as string };
+    },
+    resolve(asset) {
+      return asset.props.src;
+    },
+    async remove() {
+      // M8 doesn't support deleting assets yet - no-op for now.
+    },
+  };
+}
+
 export function useYjsTldrawStore(roomId: string): YjsTldrawStore {
   const { doc, provider } = useYjsRoom(roomId);
 
   const store = useMemo(
-    () => createTLStore({ shapeUtils: defaultShapeUtils }),
+    () => createTLStore({ shapeUtils: defaultShapeUtils, assets: createAssetStore(roomId) }),
     [roomId]
   );
 

@@ -40,7 +40,7 @@ export async function saveSnapshot({
     data: Buffer;
 }) {
     return prisma.snapshot.create({
-        data: { roomId, version, data },
+        data: { roomId, version, data: Uint8Array.from(data) },
     });
 }
 

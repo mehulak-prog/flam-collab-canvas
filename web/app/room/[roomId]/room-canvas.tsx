@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tldraw, TLAssetStore } from "tldraw";
+import { Tldraw } from "tldraw";
 import "tldraw/tldraw.css";
 import { useYjsTldrawStore } from "../../../lib/useYjsTldrawStore";
 import { PresenceLayer } from "./presence-layer";
@@ -159,7 +159,7 @@ export default function RoomCanvas({
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
-      <Tldraw store={storeWithStatus} assets={assetStore}>
+      <Tldraw store={storeWithStatus}>
         {provider && <PresenceLayer provider={provider} />}
       </Tldraw>
       <BackgroundColorPicker value={bgColor} onChange={setBgColor} />
