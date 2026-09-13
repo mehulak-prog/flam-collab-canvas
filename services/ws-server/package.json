@@ -1,0 +1,20 @@
+{
+  "name": "ws-server",
+  "version": "1.0.0",
+  "description": "M4 - Real-Time Sync Engine: Hocuspocus WebSocket server, one Yjs doc per room",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hocuspocus/server": "^2.13.5",
+    "yjs": "^13.6.18"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "tsx": "^4.16.5",
+    "@types/node": "^20.14.10"
+  }
+}
