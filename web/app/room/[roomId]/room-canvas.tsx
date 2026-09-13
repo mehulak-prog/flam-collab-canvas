@@ -39,34 +39,6 @@ export default function RoomCanvas({
   const [bgColor, setBgColor] = useState<string | null>(null);
   const [stylePanelOpen, setStylePanelOpen] = useState(true);
 
-  const assetStore: TLAssetStore = {
-    async upload(_asset, file, abortSignal) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch(`/api/rooms/${roomId}/assets`, {
-        method: "POST",
-        body: formData,
-        signal: abortSignal,
-      });
-
-      const body = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(body?.message ?? "Upload failed");
-      }
-
-      // originalUrl becomes the asset's permanent src (R2-hosted, not base64)
-      return { src: body.originalUrl as string };
-    },
-    resolve(asset) {
-      return asset.props.src;
-    },
-    async remove() {
-      // M8 doesn't support deleting assets yet - no-op for now.
-    },
-  };
-
   if (storeWithStatus.status === "loading") {
     return (
       <div
