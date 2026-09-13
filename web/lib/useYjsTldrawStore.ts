@@ -1,25 +1,13 @@
 /**
- * M5 - Canvas UI
+ * M5 - Canvas UI (bridge)  +  M6 - Presence (extension)
  *
- * Bridges tldraw's TLStore to the Yjs doc from M4's useYjsRoom, since
- * modern tldraw (v5) no longer ships a built-in Yjs binding - its own docs
- * point to @tldraw/sync instead. Per project decision, we keep the
- * already-built M4/M9 Yjs+Hocuspocus stack and hand-write this bridge
- * rather than reworking M4/M9 onto @tldraw/sync.
+ * CHANGED FOR M6: now returns { storeWithStatus, provider } instead of just
+ * the TLStoreWithStatus directly. M6's presence layer needs access to the
+ * same HocuspocusProvider (for its awareness API) - reusing it here avoids
+ * opening a second WebSocket connection to the room just for presence.
  *
- * UPDATED: useYjsRoom's `doc`/`provider` are now nullable for the brief
- * window before its effect creates the connection (see the strict-mode fix
- * in useYjsRoom.ts) - this hook's effect now no-ops until both exist.
- *
- * Design:
- *  - One Y.Map (doc.getMap("tldraw")), keyed by tldraw record id, holding
- *    the record itself as the value.
- *  - Local ('user'-scoped) store changes are pushed into the Y.Map inside a
- *    Yjs transaction tagged with LOCAL_ORIGIN.
- *  - The Y.Map observer ignores events whose transaction origin is
- *    LOCAL_ORIGIN and applies everything else via store.mergeRemoteChanges.
- *  - Initial store content is populated only after the Hocuspocus
- *    provider's "synced" event fires.
+ * Consumers: pass `storeWithStatus` to <Tldraw store={...} />, and
+ * `provider` (when non-null) to <PresenceLayer provider={provider} />.
  */
 
 "use client";
@@ -32,11 +20,17 @@ import {
   type TLStoreWithStatus,
 } from "tldraw";
 import * as Y from "yjs";
+import type { HocuspocusProvider } from "@hocuspocus/provider";
 import { useYjsRoom } from "./useYjsRoom";
 
 const LOCAL_ORIGIN = "tldraw-local-write";
 
-export function useYjsTldrawStore(roomId: string): TLStoreWithStatus {
+export interface YjsTldrawStore {
+  storeWithStatus: TLStoreWithStatus;
+  provider: HocuspocusProvider | null;
+}
+
+export function useYjsTldrawStore(roomId: string): YjsTldrawStore {
   const { doc, provider } = useYjsRoom(roomId);
 
   const store = useMemo(
@@ -47,8 +41,6 @@ export function useYjsTldrawStore(roomId: string): TLStoreWithStatus {
   const [initiallyLoaded, setInitiallyLoaded] = useState(false);
 
   useEffect(() => {
-    // Connection not established yet (brief window on mount, or between
-    // strict-mode's phantom unmount and the real one) - nothing to wire up.
     if (!doc || !provider) {
       setInitiallyLoaded(false);
       return;
@@ -118,7 +110,7 @@ export function useYjsTldrawStore(roomId: string): TLStoreWithStatus {
     };
   }, [doc, provider, store]);
 
-  return useMemo<TLStoreWithStatus>(() => {
+  const storeWithStatus = useMemo<TLStoreWithStatus>(() => {
     if (!initiallyLoaded) {
       return { status: "loading" };
     }
@@ -128,4 +120,6 @@ export function useYjsTldrawStore(roomId: string): TLStoreWithStatus {
       connectionStatus: "online",
     };
   }, [initiallyLoaded, store]);
+
+  return { storeWithStatus, provider };
 }

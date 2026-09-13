@@ -3,11 +3,13 @@
 import { Tldraw } from "tldraw";
 import "tldraw/tldraw.css";
 import { useYjsTldrawStore } from "../../../lib/useYjsTldrawStore";
+import { PresenceLayer } from "./presence-layer";
 
 /**
- * M5 - Canvas UI
+ * M5 - Canvas UI  +  M6 - Presence
  *
- * Client component - all the tldraw/Yjs hooks need to run in the browser.
+ * CHANGED FOR M6: useYjsTldrawStore now returns { storeWithStatus, provider }
+ * instead of the store directly - see useYjsTldrawStore.ts for why.
  */
 export default function RoomCanvas({
   roomId,
@@ -16,9 +18,9 @@ export default function RoomCanvas({
   roomId: string;
   roomName: string;
 }) {
-  const store = useYjsTldrawStore(roomId);
+  const { storeWithStatus, provider } = useYjsTldrawStore(roomId);
 
-  if (store.status === "loading") {
+  if (storeWithStatus.status === "loading") {
     return (
       <div
         style={{
@@ -38,7 +40,9 @@ export default function RoomCanvas({
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
-      <Tldraw store={store} />
+      <Tldraw store={storeWithStatus}>
+        {provider && <PresenceLayer provider={provider} />}
+      </Tldraw>
     </div>
   );
 }
