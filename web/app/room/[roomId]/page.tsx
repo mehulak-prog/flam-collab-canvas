@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { getRoom, getRoomMember } from "../../../lib/rooms";
 import RoomCanvas from "./room-canvas";
 
+
 /**
  * M5 - Canvas UI
  *
