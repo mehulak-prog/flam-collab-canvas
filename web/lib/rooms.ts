@@ -72,3 +72,30 @@ export async function saveAsset({
         data: { id, roomId, originalUrl, thumbUrl, width, height, sizeBytes },
     });
 }
+
+// --- M3 additions below --- //
+// Append everything below this line to the end of your existing
+// web/lib/rooms.ts. Nothing above this line should change - createRoom,
+// getRoom, getRoomMember, saveSnapshot, getLatestSnapshot, and saveAsset
+// keep their existing names and signatures untouched.
+
+export async function getRoomsForUser(userId: string) {
+    return prisma.room.findMany({
+        where: { members: { some: { userId } } },
+        orderBy: { createdAt: "desc" },
+    });
+}
+
+export async function addRoomMember({
+    roomId,
+    userId,
+    role,
+}: {
+    roomId: string;
+    userId: string;
+    role: string;
+}) {
+    return prisma.roomMember.create({
+        data: { roomId, userId, role },
+    });
+}
