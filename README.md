@@ -36,6 +36,7 @@ services/image-service/ Python image processing service (FastAPI)
 - A Neon (Postgres) account
 - A Clerk account
 - A Cloudflare R2 (or S3-compatible) bucket
+- A tldraw license key for production deployment (see [tldraw license](#tldraw-license) below) — not required for local dev
 
 ### 1. Web app
 ```bash
@@ -78,7 +79,18 @@ R2_ACCOUNT_ID=
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
 R2_PUBLIC_URL=
+NEXT_PUBLIC_TLDRAW_LICENSE_KEY=
 ```
+
+## tldraw license
+
+The tldraw SDK requires a valid license key when running in production (HTTPS on a real, non-localhost domain). Without one, the canvas renders fine locally but goes blank in production after a few seconds.
+
+- Not needed for local dev — tldraw treats `localhost` as a dev environment automatically.
+- For production (e.g. the Vercel deployment), request a free key:
+  - [Trial license](https://tldraw.dev/pricing) — issued instantly by email, good for getting unblocked quickly.
+  - [Hobby license](https://tldraw.dev/get-a-license/hobby) — free for student/personal/non-commercial projects like this one, manually reviewed.
+- Set the key as `NEXT_PUBLIC_TLDRAW_LICENSE_KEY` in `.env.local` and in Vercel's project environment variables, and pass it to the `<Tldraw licenseKey={...} />` component in `room-canvas.tsx`.
 
 ## Deployment
 
